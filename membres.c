@@ -41,16 +41,7 @@ int insererMembre(ListeMembres *liste, Membre *membre){
     }
     return 0;
 }
-/*void afficherTousLesMembres(const ListeMembres *liste){
-    if(liste->tete==NULL){// j implemente le do while et pas le while habituel car on a a faire a une liste chainee circulaire car le dernier element de la chaine vas pointer sur le premier donc il ya pas de null sauf si la liste est nulle
-        return;
-    }
-    Membre *courant=tete;
-    do{
-        printf("identifiant: %d\t nom: %s\t telephone: %s\t  lieu de residence: %s\n",courant->idMembre,courant->nom,courant->telephone,courant->lieu_de_residence);
-        courant=courant->suivant;
-    }while(courant!=tete);
-}*/
+
 Membre *trouverMembreParId(const ListeMembres *liste, int idMembre){
     if(liste->tete==NULL){// j implemente le do while et pas le while habituel car on a a faire a une liste chainee circulaire car le dernier element de la chaine vas pointer sur le premier donc il ya pas de null sauf si la liste est nulle
         return NULL;
@@ -97,7 +88,7 @@ const char *nomDuMembre(const ListeMembres *liste, int idMembre){
         return texte;
     }else{
         Membre *courant=liste->tete;
-        for(int i = 0; i < liste->taille - 1; i++){
+        for(int i = 0; i < liste->taille; i++){
             if(courant->idMembre==idMembre){
                 char texte[20];
                 strcpy(texte, courant->nom);
@@ -120,4 +111,20 @@ void libererListeMembres(ListeMembres *liste){
         p=suiv;
     }
     liste->tete = NULL;
+}
+
+void afficherTousLesMembres(const ListeMembres *liste){
+    printf("liste de tous les memebres du fichiers\n");
+    if(liste->tete==NULL){// j implemente le do while et pas le while habituel car on a a faire a une liste chainee circulaire car le dernier element de la chaine vas pointer sur le premier donc il ya pas de null sauf si la liste est nulle
+        printf("il nya aucun membre present\n");
+    }
+    Membre *courant=liste->tete;
+    for(int i = 0; i<liste->taille; i++){
+        printf("identifiant: %d\t nom: %s\t telephone: %s\t  lieu de residence: %s\n",courant->idMembre,courant->nom,courant->telephone,courant->lieu_de_residence);
+        courant=courant->suivant;
+    };
+}
+
+void menuMembres(Tontine *t){
+    
 }
