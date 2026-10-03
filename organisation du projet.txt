@@ -1,0 +1,29 @@
+PROJET_TONTINE/
+│
+├── main.c
+│
+├── structures.h
+|
+├── utils.h
+│
+├── membres.h
+├── membres.c
+│
+├── cycles.h
+├── cycles.c
+│
+├── seances.h
+├── seances.c
+│
+├── cotisations.h
+├── cotisations.c
+│
+├── fichiers.h
+├── fichiers.c
+│
+├── membres.txt
+├── file.txt
+├── historique.txt
+├── seance.txt
+├── cotisation.txt
+└── soldecaisse.txt
