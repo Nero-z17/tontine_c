@@ -310,3 +310,57 @@ int nombreAleatoire(int min, int max)
     }
     return min + (int)((unsigned int)rand() % largeur);
 }
+
+
+const char *libelleEtatCycle(EtatCycle etat)
+{
+    switch (etat)
+    {
+        case CYCLE_PLANIFIE: return "PLANIFIE";
+        case CYCLE_EN_COURS: return "EN COURS";
+        case CYCLE_TERMINE:  return "TERMINE";
+    }
+    return "INCONNU";
+}
+
+const char *libelleEtatSeance(EtatSeance etat)
+{
+    switch (etat)
+    {
+        case SEANCE_OUVERTE:  return "OUVERTE";
+        case SEANCE_CLOTUREE: return "CLOTUREE";
+    }
+    return "INCONNU";
+}
+
+const char *libelleEtatCotisation(EtatCotisation etat)
+{
+    switch (etat)
+    {
+        case COTISATION_NON_PAYEE: return "NON PAYEE";
+        case COTISATION_PARTIELLE: return "PARTIELLE";
+        case COTISATION_PAYEE:     return "PAYEE";
+    }
+    return "INCONNU";
+}
+
+const char *libelleEtatDette(EtatDette etat)
+{
+    switch (etat)
+    {
+        case DETTE_EN_COURS:           return "EN COURS";
+        case DETTE_PARTIELLEMENT_REGLEE: return "PARTIELLEMENT REGLEE";
+        case DETTE_REGULARISEE:        return "REGULARISEE";
+    }
+    return "INCONNU";
+}
+
+const char *libelleTypePenalite(TypePenalite type)
+{
+    switch (type)
+    {
+        case PENALITE_PARTIELLE:    return "PARTIELLE (10%)";
+        case PENALITE_NON_PAIEMENT: return "NON PAIEMENT (15%)";
+    }
+    return "INCONNU";
+}
