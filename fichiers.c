@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <limits.h>
 
 #include "fichiers.h"
 #include "membres.h"
@@ -92,6 +93,11 @@ int sauvegarderMembres(const Tontine *t)
     const Membre *courant;
     int i;
 
+    if (t == NULL)
+    {
+        return 0;
+    }
+
     f = fopen(FICHIER_MEMBRES, "w");
     if (f == NULL)
     {
@@ -101,14 +107,18 @@ int sauvegarderMembres(const Tontine *t)
     courant = t->membres.tete;
     for (i = 0; i < t->membres.taille; i++)     /* liste circulaire : on compte */
     {
-        fprintf(f, "%d;%s;%s;%s\n",
-                courant->idMembre, courant->nom,
-                courant->telephone, courant->lieu_de_residence);
+        if (courant == NULL ||
+            fprintf(f, "%d;%s;%s;%s\n",
+                    courant->idMembre, courant->nom,
+                    courant->telephone, courant->lieu_de_residence) < 0)
+        {
+            fclose(f);
+            return 0;
+        }
         courant = courant->suivant;
     }
 
-    fclose(f);
-    return 1;
+    return fclose(f) == 0;
 }
 
 /*
@@ -126,17 +136,38 @@ int chargerMembres(Tontine *t)
     char *champNom;
     char *champTel;
     char *champLieu;
+    char *finId;
+    ListeMembres membresChargees;
+    int champsSupplementaires;
+    long valeurId;
     int id;
     Membre *m;
+
+    if (t == NULL)
+    {
+        return 0;
+    }
 
     f = fopen(FICHIER_MEMBRES, "r");
     if (f == NULL)
     {
-        return (errno == ENOENT);       /* 1 si le fichier n'existe pas encore */
+        if (errno == ENOENT)
+        {
+            libererListeMembres(&t->membres);
+            return 1;                   /* premier lancement : liste vide */
+        }
+        return 0;
     }
 
+    initialiserListeMembres(&membresChargees);
     while (fgets(ligne, sizeof(ligne), f) != NULL)
     {
+        if (strchr(ligne, '\n') == NULL && !feof(f))
+        {
+            libererListeMembres(&membresChargees);
+            fclose(f);
+            return 0;
+        }
         ligne[strcspn(ligne, "\r\n")] = '\0';   /* enlève la fin de ligne */
         if (ligne[0] == '\0')
         {
@@ -148,37 +179,54 @@ int chargerMembres(Tontine *t)
         champNom  = champSuivant(&reste);
         champTel  = champSuivant(&reste);
         champLieu = champSuivant(&reste);
+        champsSupplementaires = (reste != NULL);
 
         if (champId == NULL || champNom == NULL ||
-            champTel == NULL || champLieu == NULL)
+            champTel == NULL || champLieu == NULL || champsSupplementaires)
         {
+            libererListeMembres(&membresChargees);
             fclose(f);
             return 0;                           /* ligne incomplète */
         }
 
-        id = atoi(champId);
-        if (id <= 0)
+        errno = 0;
+        valeurId = strtol(champId, &finId, 10);
+        if (champId[0] == '\0' || *finId != '\0' || errno == ERANGE ||
+            valeurId <= 0 || valeurId > INT_MAX)
         {
+            libererListeMembres(&membresChargees);
             fclose(f);
             return 0;                           /* identifiant invalide */
         }
+        id = (int)valeurId;
 
         m = creerMembre(id, champNom, champTel, champLieu);
         if (m == NULL)
         {
+            libererListeMembres(&membresChargees);
             fclose(f);
-            return 0;                           /* plus de mémoire */
+            return 0;                           /* champ invalide ou allocation échouée */
         }
 
-        if (insererMembre(&t->membres, m) == 0)
+        if (insererMembre(&membresChargees, m) == 0)
         {
             free(m);                            /* identifiant en double */
+            libererListeMembres(&membresChargees);
             fclose(f);
             return 0;
         }
     }
 
+    if (ferror(f))
+    {
+        libererListeMembres(&membresChargees);
+        fclose(f);
+        return 0;
+    }
     fclose(f);
+
+    libererListeMembres(&t->membres);
+    t->membres = membresChargees;
     return 1;
 }
 
@@ -248,16 +296,34 @@ void ajouterHistorique(int idCycle, int numeroSeance, const char *message)
 {
     FILE *f;
     char date[TAILLE_DATE];
+    int ecritureOk;
+
+    if (message == NULL)
+    {
+        fprintf(stderr, "Erreur : message d'historique invalide.\n");
+        return;
+    }
 
     f = fopen(FICHIER_HISTORIQUE, "a");         /* "a" = ajouter à la fin */
     if (f == NULL)
     {
+        fprintf(stderr, "Erreur : impossible d'ouvrir %s en ecriture.\n",
+                FICHIER_HISTORIQUE);
         return;
     }
 
     dateDuJour(date);
-    fprintf(f, "%s;%d;%d;%s\n", date, idCycle, numeroSeance, message);
-    fclose(f);
+    ecritureOk = fprintf(f, "%s;%d;%d;%s\n",
+                          date, idCycle, numeroSeance, message) >= 0;
+    if (fclose(f) != 0)
+    {
+        ecritureOk = 0;
+    }
+    if (!ecritureOk)
+    {
+        fprintf(stderr, "Erreur : impossible d'ecrire dans %s.\n",
+                FICHIER_HISTORIQUE);
+    }
 }
 
 /* À ÉCRIRE PLUS TARD : affichage de l'historique. */

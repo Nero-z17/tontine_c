@@ -1,170 +1,515 @@
-#include<stdio.h>
-#include<assert.h>
-#include<stdlib.h>
-#include<string.h>
-#include"membres.h"
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "membres.h"
+#include "cycles.h"
+#include "fichiers.h"
+#include "utils.h"
 
-void initialiserListeMembres(ListeMembres *liste){
+static int chaineNonVide(const char *texte)
+{
+    if (texte == NULL)
+    {
+        return 0;
+    }
+
+    while (*texte != '\0')
+    {
+        if (!isspace((unsigned char)*texte))
+        {
+            return 1;
+        }
+        texte++;
+    }
+    return 0;
+}
+
+static int champValide(const char *texte, size_t taille)
+{
+    return chaineNonVide(texte) && strlen(texte) < taille;
+}
+
+static int contientSansCasse(const char *texte, const char *recherche)
+{
+    const char *debut;
+    const char *a;
+    const char *b;
+
+    if (texte == NULL || recherche == NULL)
+    {
+        return 0;
+    }
+    if (*recherche == '\0')
+    {
+        return 1;
+    }
+
+    for (debut = texte; *debut != '\0'; debut++)
+    {
+        a = debut;
+        b = recherche;
+        while (*a != '\0' && *b != '\0' &&
+               tolower((unsigned char)*a) == tolower((unsigned char)*b))
+        {
+            a++;
+            b++;
+        }
+        if (*b == '\0')
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static void enregistrerOperation(const Tontine *t, const char *message)
+{
+    if (!sauvegarderTout(t))
+    {
+        printf("Erreur : impossible de sauvegarder les donnees des membres.\n");
+    }
+    ajouterHistorique(0, 0, message);
+}
+
+void initialiserListeMembres(ListeMembres *liste)
+{
+    if (liste != NULL)
+    {
+        liste->tete = NULL;
+        liste->taille = 0;
+    }
+}
+
+Membre *creerMembre(int idMembre, const char *nom,
+                    const char *telephone, const char *lieu_de_residence)
+{
+    Membre *membre;
+
+    if (idMembre <= 0 ||
+        !champValide(nom, TAILLE_NOM) ||
+        !champValide(telephone, TAILLE_TELEPHONE) ||
+        !champValide(lieu_de_residence, TAILLE_LIEU))
+    {
+        return NULL;
+    }
+
+    membre = malloc(sizeof(*membre));
+    if (membre == NULL)
+    {
+        return NULL;
+    }
+
+    membre->idMembre = idMembre;
+    strcpy(membre->nom, nom);
+    strcpy(membre->telephone, telephone);
+    strcpy(membre->lieu_de_residence, lieu_de_residence);
+    membre->suivant = NULL;
+    return membre;
+}
+
+int insererMembre(ListeMembres *liste, Membre *membre)
+{
+    Membre *dernier;
+
+    if (liste == NULL || membre == NULL || membre->suivant != NULL ||
+        membre->idMembre <= 0 || idMembreExiste(liste, membre->idMembre))
+    {
+        return 0;
+    }
+
+    if (liste->tete == NULL)
+    {
+        liste->tete = membre;
+        membre->suivant = membre;
+    }
+    else
+    {
+        dernier = liste->tete;
+        while (dernier->suivant != liste->tete)
+        {
+            dernier = dernier->suivant;
+        }
+        dernier->suivant = membre;
+        membre->suivant = liste->tete;
+    }
+    liste->taille++;
+    return 1;
+}
+
+Membre *trouverMembreParId(const ListeMembres *liste, int idMembre)
+{
+    Membre *courant;
+
+    if (liste == NULL || liste->tete == NULL)
+    {
+        return NULL;
+    }
+
+    courant = liste->tete;
+    do
+    {
+        if (courant->idMembre == idMembre)
+        {
+            return courant;
+        }
+        courant = courant->suivant;
+    } while (courant != liste->tete);
+
+    return NULL;
+}
+
+int idMembreExiste(const ListeMembres *liste, int idMembre)
+{
+    return trouverMembreParId(liste, idMembre) != NULL;
+}
+
+int existeAuMoinsUnMembre(const ListeMembres *liste)
+{
+    return liste != NULL && liste->tete != NULL;
+}
+
+const char *nomDuMembre(const ListeMembres *liste, int idMembre)
+{
+    Membre *membre = trouverMembreParId(liste, idMembre);
+    return membre != NULL ? membre->nom : "Inconnu";
+}
+
+void libererListeMembres(ListeMembres *liste)
+{
+    Membre *courant;
+    Membre *suivant;
+    Membre *dernier;
+
+    if (liste == NULL || liste->tete == NULL)
+    {
+        if (liste != NULL)
+        {
+            liste->taille = 0;
+        }
+        return;
+    }
+
+    dernier = liste->tete;
+    while (dernier->suivant != liste->tete)
+    {
+        dernier = dernier->suivant;
+    }
+    dernier->suivant = NULL;
+
+    courant = liste->tete;
+    while (courant != NULL)
+    {
+        suivant = courant->suivant;
+        free(courant);
+        courant = suivant;
+    }
+
     liste->tete = NULL;
     liste->taille = 0;
 }
 
+int ajouterMembre(Tontine *t, int idMembre, const char *nom,
+                  const char *telephone, const char *lieu_de_residence)
+{
+    Membre *membre;
 
+    if (t == NULL || idMembre <= 0 ||
+        idMembreExiste(&t->membres, idMembre) ||
+        !champValide(nom, TAILLE_NOM) ||
+        !champValide(telephone, TAILLE_TELEPHONE) ||
+        !champValide(lieu_de_residence, TAILLE_LIEU))
+    {
+        return 0;
+    }
 
-Membre *creer_membre(int idMembre,char nom[TAILLE_NOM],char telephone[TAILLE_TELEPHONE],char lieu_de_residence[TAILLE_LIEU]){
-        Membre *m=malloc(sizeof(Membre));
-        assert(m!=NULL);
-        m->idMembre=idMembre;
-       strcpy(m->nom,nom);
-       strcpy(m->telephone,telephone);
-       strcpy(m->lieu_de_residence,lieu_de_residence);
-       m->suivant=NULL;
-       return m;
+    membre = creerMembre(idMembre, nom, telephone, lieu_de_residence);
+    if (membre == NULL)
+    {
+        return 0;
+    }
+    if (!insererMembre(&t->membres, membre))
+    {
+        free(membre);
+        return 0;
+    }
+    return 1;
 }
 
+int modifierMembre(Tontine *t, int idMembre, const char *nouveauNom,
+                   const char *nouveauTelephone, const char *nouveauLieu)
+{
+    Membre *membre;
 
-int insererMembre(ListeMembres *liste, Membre *membre){
-    if(liste->tete==NULL){
-        liste->tete = membre;
-        membre->suivant=liste->tete;
-    }else{
-        Membre *courant=liste->tete;
-        for(int i = 0; i < liste->taille; i++){
-            courant = courant->suivant;
+    if (t == NULL ||
+        !champValide(nouveauNom, TAILLE_NOM) ||
+        !champValide(nouveauTelephone, TAILLE_TELEPHONE) ||
+        !champValide(nouveauLieu, TAILLE_LIEU))
+    {
+        return 0;
+    }
+
+    membre = trouverMembreParId(&t->membres, idMembre);
+    if (membre == NULL)
+    {
+        return 0;
+    }
+
+    strcpy(membre->nom, nouveauNom);
+    strcpy(membre->telephone, nouveauTelephone);
+    strcpy(membre->lieu_de_residence, nouveauLieu);
+    return 1;
+}
+
+ResultatSuppression supprimerMembre(Tontine *t, int idMembre)
+{
+    Membre *courant;
+    Membre *precedent;
+
+    if (t == NULL || t->membres.tete == NULL)
+    {
+        return SUPPRESSION_MEMBRE_INTROUVABLE;
+    }
+    if (membreAUnCycleNonTermine(t, idMembre))
+    {
+        return SUPPRESSION_REFUSEE_CYCLE_NON_TERMINE;
+    }
+
+    courant = t->membres.tete;
+    while (courant->idMembre != idMembre)
+    {
+        courant = courant->suivant;
+        if (courant == t->membres.tete)
+        {
+            return SUPPRESSION_MEMBRE_INTROUVABLE;
         }
-
-        courant->suivant=membre;
-        membre->suivant=liste->tete;
     }
-    liste->taille++;
-    return 0;
-}
 
-Membre *trouverMembreParId(const ListeMembres *liste, int idMembre){
-    if(liste->tete==NULL){// j implemente le do while et pas le while habituel car on a a faire a une liste chainee circulaire car le dernier element de la chaine vas pointer sur le premier donc il ya pas de null sauf si la liste est nulle
-        return NULL;
+    if (courant->suivant == courant)
+    {
+        t->membres.tete = NULL;
     }
-     Membre *courant=liste->tete;
-    do{
-        if(courant->idMembre==idMembre){
-            return courant;
-        }else{
-            courant=courant->suivant;
+    else
+    {
+        if (courant == t->membres.tete)
+        {
+            precedent = t->membres.tete;
+            while (precedent->suivant != courant)
+            {
+                precedent = precedent->suivant;
+            }
+            precedent->suivant = courant->suivant;
+            t->membres.tete = courant->suivant;
         }
-
-    }while(courant!=liste->tete); 
-    return NULL;
-}
-
-int idMembreExiste(const ListeMembres *liste, int idMembre){
-    if(liste->tete==NULL){// j implemente le do while et pas le while habituel car on a a faire a une liste chainee circulaire car le dernier element de la chaine vas pointer sur le premier donc il ya pas de null sauf si la liste est nulle
-        return 0;    }
-     Membre *courant=liste->tete;
-    do{
-        if(courant->idMembre==idMembre){
-            return 1;
-        }else{
-            courant=courant->suivant;
+        else
+        {
+            precedent = t->membres.tete;
+            while (precedent->suivant != courant)
+            {
+                precedent = precedent->suivant;
+            }
+            precedent->suivant = courant->suivant;
         }
-
-    }while(courant!=liste->tete); 
-    return 0;
+    }
+    free(courant);
+    t->membres.taille--;
+    return SUPPRESSION_OK;
 }
 
-int existeAuMoinsUnMembre(const ListeMembres *liste){
-    if(liste->tete==NULL){// j implemente le do while et pas le while habituel car on a a faire a une liste chainee circulaire car le dernier element de la chaine vas pointer sur le premier donc il ya pas de null sauf si la liste est nulle
-        return 0;    
-    }else{
-        return 1;
+const char *messageSuppression(ResultatSuppression resultat)
+{
+    switch (resultat)
+    {
+        case SUPPRESSION_OK:
+            return "Le membre a ete supprime.";
+        case SUPPRESSION_MEMBRE_INTROUVABLE:
+            return "Aucun membre ne correspond a cet identifiant.";
+        case SUPPRESSION_REFUSEE_CYCLE_NON_TERMINE:
+            return "Suppression refusee : le membre participe a un cycle non termine.";
+        default:
+            return "Resultat de suppression inconnu.";
     }
 }
 
-const char *nomDuMembre(const ListeMembres *liste, int idMembre){
-    Membre *membre=trouverMembreParId(liste,idMembre);
-    if(membre==NULL){
-        return "inconnu";
-    }
-    return membre->nom;
-}
-
-void libererListeMembres(ListeMembres *liste){
-    if(liste->tete==NULL){
+void afficherMembre(const Membre *membre)
+{
+    if (membre == NULL)
+    {
+        printf("Membre introuvable.\n");
         return;
     }
-    Membre *courant=liste->tete;
-    for(int i=0;i<liste->taille;i++){
-        Membre *suivant = courant->suivant;
-        free(courant);
-        courant=suivant;
-    }
-    liste->tete = NULL;
-    liste->taille=0;
+    printf("Identifiant : %d | Nom : %s | Telephone : %s | Residence : %s\n",
+           membre->idMembre, membre->nom, membre->telephone,
+           membre->lieu_de_residence);
 }
 
-void afficherTousLesMembres(const ListeMembres *liste){
-    printf("liste de tous les memebres du fichiers\n");
-    if(liste->tete==NULL){// j implemente le do while et pas le while habituel car on a a faire a une liste chainee circulaire car le dernier element de la chaine vas pointer sur le premier donc il ya pas de null sauf si la liste est nulle
-        printf("il nya aucun membre present\n");
+void afficherTousLesMembres(const ListeMembres *liste)
+{
+    Membre *courant;
+    int i;
+
+    if (!existeAuMoinsUnMembre(liste))
+    {
+        printf("Aucun membre n'est enregistre.\n");
         return;
     }
-    Membre *courant=liste->tete;
-    for(int i = 0; i<liste->taille; i++){
-        printf("identifiant: %d\t nom: %s\t telephone: %s\t  lieu de residence: %s\n",courant->idMembre,courant->nom,courant->telephone,courant->lieu_de_residence);
-        courant=courant->suivant;
+
+    printf("\nListe des membres (%d) :\n", liste->taille);
+    courant = liste->tete;
+    for (i = 0; i < liste->taille; i++)
+    {
+        afficherMembre(courant);
+        courant = courant->suivant;
     }
 }
 
-void menuMembres(Tontine *t){
-    char nom[TAILLE_NOM], telephone[TAILLE_TELEPHONE], residence[TAILLE_LIEU];
-    int choix,id;
-    do{
-        printf("\n========== Membre ==========\n");
-        printf("1. ajouter un membre\n");
-        printf("2. modifier un membre\n");
-        printf("3. rechercher un membre\n");
-        printf("4. afficher les membres\n");
-        printf("5. supprimer un membre\n");
-        printf("0. Quitter\n");
-        printf("===============================\n");
+int afficherMembresParNom(const ListeMembres *liste, const char *texte)
+{
+    Membre *courant;
+    int i;
+    int nombreTrouve = 0;
 
-        printf("Votre choix : ");
-        scanf("%d", &choix);
-        switch (choix){
-        case 1:
-                printf("entrer les informations du nouveau memebre ");
-                printf("entrer son id");
-                scanf("%d",&id);
-                printf("entrer son nom ");
-                scanf("%s",nom);
-                printf("entrer le numero de telephone");
-                scanf("%s",telephone);
-                printf("entrer son lieu de residence");
-                scanf("%s",&residence);
-                Membre *m = creer_membre(id, nom, telephone,residence);
-                ListeMembres *l = malloc(sizeof *l);
-                initialiserListeMembres(l);
-                insererMembre(l, m);
-                
+    if (!existeAuMoinsUnMembre(liste) || texte == NULL)
+    {
+        printf("Aucun membre ne correspond a cette recherche.\n");
+        return 0;
+    }
+
+    courant = liste->tete;
+    for (i = 0; i < liste->taille; i++)
+    {
+        if (contientSansCasse(courant->nom, texte))
+        {
+            afficherMembre(courant);
+            nombreTrouve++;
+        }
+        courant = courant->suivant;
+    }
+    if (nombreTrouve == 0)
+    {
+        printf("Aucun membre ne correspond a cette recherche.\n");
+    }
+    return nombreTrouve;
+}
+
+void menuMembres(Tontine *t)
+{
+    char nom[TAILLE_NOM];
+    char telephone[TAILLE_TELEPHONE];
+    char residence[TAILLE_LIEU];
+    char recherche[TAILLE_NOM];
+    char historique[TAILLE_MESSAGE_HISTORIQUE];
+    int choix;
+    int id;
+    int typeRecherche;
+    Membre *membre;
+    ResultatSuppression resultat;
+
+    if (t == NULL)
+    {
+        printf("Erreur : les donnees de la tontine sont indisponibles.\n");
+        return;
+    }
+
+    do
+    {
+        afficherTitre("GESTION DES MEMBRES");
+        printf("1. Ajouter un membre\n");
+        printf("2. Modifier un membre\n");
+        printf("3. Rechercher un membre\n");
+        printf("4. Afficher tous les membres\n");
+        printf("5. Supprimer un membre\n");
+        printf("0. Retour\n");
+
+        choix = lireEntier("\nVotre choix : ", 0, 5);
+        switch (choix)
+        {
+            case 1:
+                id = lireEntier("Identifiant du nouveau membre : ", 1, 2147483647);
+                lireChaine("Nom : ", nom, TAILLE_NOM);
+                lireChaine("Telephone : ", telephone, TAILLE_TELEPHONE);
+                lireChaine("Lieu de residence : ", residence, TAILLE_LIEU);
+                if (ajouterMembre(t, id, nom, telephone, residence))
+                {
+                    printf("Membre ajoute avec succes.\n");
+                    snprintf(historique, sizeof(historique),
+                             "Ajout du membre %d (%s)", id, nom);
+                    enregistrerOperation(t, historique);
+                }
+                else
+                {
+                    printf("Ajout impossible : identifiant deja utilise, "
+                           "champ vide ou trop long, ou memoire insuffisante.\n");
+                }
+                break;
+
             case 2:
-                /* Sous-menu des cycles */
+                id = lireEntier("Identifiant du membre a modifier : ", 1, 2147483647);
+                membre = trouverMembreParId(&t->membres, id);
+                if (membre == NULL)
+                {
+                    printf("Aucun membre ne correspond a cet identifiant.\n");
+                    break;
+                }
+                lireChaine("Nouveau nom : ", nom, TAILLE_NOM);
+                lireChaine("Nouveau telephone : ", telephone, TAILLE_TELEPHONE);
+                lireChaine("Nouveau lieu de residence : ", residence, TAILLE_LIEU);
+                if (modifierMembre(t, id, nom, telephone, residence))
+                {
+                    printf("Informations du membre mises a jour.\n");
+                    snprintf(historique, sizeof(historique),
+                             "Modification du membre %d (%s)", id, nom);
+                    enregistrerOperation(t, historique);
+                }
+                else
+                {
+                    printf("Modification impossible : un champ est vide ou trop long.\n");
+                }
                 break;
 
             case 3:
-                printf("\nGestion des cotisations...\n");
+                typeRecherche = lireEntier(
+                    "Rechercher par : 1. Identifiant  2. Nom\nVotre choix : ", 1, 2);
+                if (typeRecherche == 1)
+                {
+                    id = lireEntier("Identifiant a rechercher : ", 1, 2147483647);
+                    membre = trouverMembreParId(&t->membres, id);
+                    if (membre == NULL)
+                    {
+                        printf("Aucun membre ne correspond a cet identifiant.\n");
+                    }
+                    else
+                    {
+                        afficherMembre(membre);
+                    }
+                }
+                else
+                {
+                    lireChaine("Texte a rechercher dans le nom : ",
+                               recherche, TAILLE_NOM);
+                    afficherMembresParNom(&t->membres, recherche);
+                }
                 break;
 
             case 4:
-                printf("\nGestion de la caisse...\n");
+                afficherTousLesMembres(&t->membres);
                 break;
-        
+
             case 5:
-                printf("\nAu revoir !\n");
+                id = lireEntier("Identifiant du membre a supprimer : ", 1, 2147483647);
+                resultat = supprimerMembre(t, id);
+                printf("%s\n", messageSuppression(resultat));
+                if (resultat == SUPPRESSION_OK)
+                {
+                    snprintf(historique, sizeof(historique),
+                             "Suppression du membre %d", id);
+                    enregistrerOperation(t, historique);
+                }
                 break;
 
-            default:
-                printf("\nChoix invalide.\n");
+            case 0:
+                break;
         }
-
-    } while(choix != 5);
+    } while (choix != 0);
 }

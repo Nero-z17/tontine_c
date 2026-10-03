@@ -28,6 +28,7 @@ int main(void)
     Tontine t;       /* contient TOUTES les données : membres et cycles */
     int choix;       /* le choix de l'utilisateur dans le menu */
     int aMembres;    /* 1 s'il y a au moins un membre, 0 sinon */
+    int sauvegardeReussie;
 
     /* ---------- 1. Préparation ---------- */
     initialiserAleatoire();      /* pour le tirage au sort des bénéficiaires */
@@ -78,14 +79,28 @@ int main(void)
                 case 0: break;                /* quitter : rien à faire ici */
             }
 
-            sauvegarderTout(&t);     /* on sauvegarde après chaque sous-menu */
+            if (!sauvegarderTout(&t))
+            {
+                fprintf(stderr,
+                        "Erreur : impossible de sauvegarder les donnees.\n");
+            }
         }
 
     } while (choix != 0);
 
     /* ---------- 4. Fin du programme ---------- */
+    sauvegardeReussie = sauvegarderTout(&t);
     libererTontine(&t);              /* libère toute la mémoire */
-    printf("\nDonnées sauvegardées. Au revoir !\n");
+    if (sauvegardeReussie)
+    {
+        printf("\nDonnees sauvegardees. Au revoir !\n");
+    }
+    else
+    {
+        fprintf(stderr,
+                "\nErreur : la sauvegarde finale a echoue. "
+                "Verifiez les fichiers de donnees.\n");
+    }
 
-    return 0;
+    return sauvegardeReussie ? 0 : 1;
 }
