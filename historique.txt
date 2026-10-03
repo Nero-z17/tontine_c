@@ -1,2 +1,6 @@
 03/10/2026;0;0;Ajout du membre 243 (tagne)
 03/10/2026;0;0;Ajout du membre 124 (tagne)
+03/10/2026;0;0;Suppression du membre 124
+03/10/2026;0;0;Ajout du membre 153 (paul)
+03/10/2026;0;0;Ajout du membre 21 (Jae)
+03/10/2026;0;0;Modification du membre 153 (ZZA)

@@ -276,9 +276,18 @@ ResultatSuppression supprimerMembre(Tontine *t, int idMembre)
         return SUPPRESSION_REFUSEE_CYCLE_NON_TERMINE;
     }
 
+    /* precedent = dernier membre (celui qui pointe vers la tête) */
+    precedent = t->membres.tete;
+    while (precedent->suivant != t->membres.tete)
+    {
+        precedent = precedent->suivant;
+    }
+
+    /* on cherche le membre, en gardant toujours son précédent */
     courant = t->membres.tete;
     while (courant->idMembre != idMembre)
     {
+        precedent = courant;
         courant = courant->suivant;
         if (courant == t->membres.tete)
         {
@@ -286,32 +295,20 @@ ResultatSuppression supprimerMembre(Tontine *t, int idMembre)
         }
     }
 
+    /* on retire le membre de la liste circulaire */
     if (courant->suivant == courant)
     {
-        t->membres.tete = NULL;
+        t->membres.tete = NULL;                 /* c'était le seul membre */
     }
     else
     {
+        precedent->suivant = courant->suivant;
         if (courant == t->membres.tete)
         {
-            precedent = t->membres.tete;
-            while (precedent->suivant != courant)
-            {
-                precedent = precedent->suivant;
-            }
-            precedent->suivant = courant->suivant;
-            t->membres.tete = courant->suivant;
-        }
-        else
-        {
-            precedent = t->membres.tete;
-            while (precedent->suivant != courant)
-            {
-                precedent = precedent->suivant;
-            }
-            precedent->suivant = courant->suivant;
+            t->membres.tete = courant->suivant; /* la tête change */
         }
     }
+
     free(courant);
     t->membres.taille--;
     return SUPPRESSION_OK;
