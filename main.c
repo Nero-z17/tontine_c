@@ -50,7 +50,7 @@ int main(void)
         afficherTitre("GESTION DE LA TONTINE");
         printf("1. Gestion des membres\n");
         printf("2. Gestion des cycles\n");
-        printf("3. Gestion des séances\n");
+        printf("3. Gestion des seances\n");
         printf("4. Gestion des cotisations\n");
         printf("5. Gestion de la caisse\n");
         printf("6. Historique\n");
@@ -62,7 +62,7 @@ int main(void)
         if (aMembres == 0 && choix >= 2 && choix <= 5)
         {
             /* Sans membre, les options 2 à 5 sont bloquées */
-            printf("\nAucun membre n'est enregistré. ");
+            printf("\nAucun membre n'est enregistre. ");
             printf("Veuillez ajouter au moins un membre avant de poursuivre.\n\n");
         }
         else
