@@ -204,13 +204,13 @@ typedef struct Cotisation{
  *
  * Exemple : séance 1, bénéficiaire = membre 3, débiteur = membre 5
  * Le membre 5 devait 10 000 et a payé 7 000 :
- *      montantPayeInitial = 7 000
- *      principalInitial   = 3 000
+ *      montantPayeInitial = 7 000         ce que le membre a payé à la séance d'origine
+ *      principalInitial   = 3 000         ce qui manquait au départ (10 000 − 7 000)
  *      principalRestant   = 3 000 (puis diminue au fil des
- *                                  remboursements)
+ *                                  remboursements)     ce qu'il doit encore rembourser
  *
  * Pénalité par séance de retard =
- *      montantCotisation x taux / 100
+ *      montantCotisation x taux / 100     10% pour la cotisation partielle et 15% pour l'absence de cotissation
  *      (taux déduit de typePenalite)
  *
  * La dette n'est JAMAIS supprimée : une fois réglée, elle passe
