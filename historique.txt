@@ -4,3 +4,4 @@
 03/10/2026;0;0;Ajout du membre 153 (paul)
 03/10/2026;0;0;Ajout du membre 21 (Jae)
 03/10/2026;0;0;Modification du membre 153 (ZZA)
+07/10/2026;134;0;Creation du cycle : 2 participants, cotisation 10000, ordre tire au sort
