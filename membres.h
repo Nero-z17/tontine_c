@@ -9,7 +9,7 @@
    Ce module appelle :
      - cycles.h    : membreAUnCycleNonTermine()
      - fichiers.h  : sauvegarderTout(), ajouterHistorique()
-     - utils.h     : saisies, affichage
+     - utils.h     : affichage
 
    Ce module est appelé par :
      - fichiers.c  : creerMembre(), insererMembre()   (chargement)

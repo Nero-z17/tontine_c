@@ -11,7 +11,7 @@
      - seances.h     : initialiserSeances(), ouvrirSeance(), afficherSeance()
      - cotisations.h : totaux pour le bilan (totalEncaisse, ...)
      - fichiers.h    : sauvegarderTout(), ajouterHistorique()
-     - utils.h       : saisies, affichage, dates
+     - utils.h       : affichage, dates
 
    Ce module est appelé par :
      - membres.c     : membreAUnCycleNonTermine()

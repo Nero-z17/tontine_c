@@ -432,15 +432,18 @@ static void menuPaiement(Tontine *t, Cycle *c, int detteSeulement)
     ResultatPaiement r;
     if (!c || c->etat != CYCLE_EN_COURS) { puts(messagePaiement(PAIEMENT_CYCLE_NON_ACTIF)); return; }
     afficherParticipants(t, c);
-    id = lireEntier("Identifiant du membre : ", 1, INT_MAX);
+    printf("Identifiant du membre : ");
+    scanf("%d", &id);
     if (!membreParticipeAuCycle(c, id)) { puts(messagePaiement(PAIEMENT_MEMBRE_NON_PARTICIPANT)); return; }
     d = calculerDetailDu(c, id);
     if (detteSeulement) d.cotisationCouranteDue = 0;
     d.totalDu = somme(somme(d.principalDu, d.penalitesDues), d.cotisationCouranteDue);
     afficherDetailDu(&d);
     if (!d.totalDu) { puts(messagePaiement(PAIEMENT_RIEN_A_PAYER)); return; }
-    montant = lireEntier("Montant du paiement : ", 1, INT_MAX);
-    lireDate("Date (JJ/MM/AAAA) : ", date);
+    printf("Montant du paiement : ");
+    scanf("%d", &montant);
+    printf("Date (JJ/MM/AAAA) : ");
+    scanf("%10s", date);
     r = detteSeulement ? regulariserDette(c, id, montant, date, &recu) :
                          effectuerPaiement(c, id, montant, date, &recu);
     puts(messagePaiement(r));
@@ -456,7 +459,6 @@ void menuCotiser(Tontine *t, Cycle *c)
 {
     if (!t || !c) { puts("Erreur : donnees indisponibles."); return; }
     menuPaiement(t, c, 0);
-    attendreEntree();
 }
 
 void menuCotisations(Tontine *t)
@@ -468,23 +470,27 @@ void menuCotisations(Tontine *t)
         afficherTitre("GESTION DES COTISATIONS");
         printf("Cycle %d\n1. Cotiser\n2. Consulter les cotisations\n3. Dettes\n4. Penalites\n5. Regulariser une dette\n0. Retour\n",
                c->idCycle);
-        choix = lireEntier("Votre choix : ", 0, 5);
+        printf("Votre choix : ");
+        scanf("%d", &choix);
         switch (choix) {
             case 1: menuCotiser(t, c); break;
             case 2:
-                sousChoix = lireEntier("1. Seance  2. Membre : ", 1, 2);
+                printf("1. Seance  2. Membre : ");
+                scanf("%d", &sousChoix);
                 if (sousChoix == 1) {
-                    numero = lireEntier("Numero de seance : ", 1, c->nombreParticipants);
+                    printf("Numero de seance : ");
+                    scanf("%d", &numero);
                     afficherCotisationsSeance(t, c, numero);
                 } else {
                     afficherParticipants(t, c);
-                    id = lireEntier("Identifiant du membre : ", 1, INT_MAX);
+                    printf("Identifiant du membre : ");
+                    scanf("%d", &id);
                     afficherCotisationsMembre(t, c, id);
                 }
-                attendreEntree(); break;
-            case 3: afficherDettes(t, c); attendreEntree(); break;
-            case 4: afficherPenalites(t, c); attendreEntree(); break;
-            case 5: menuPaiement(t, c, 1); attendreEntree(); break;
+                break;
+            case 3: afficherDettes(t, c); break;
+            case 4: afficherPenalites(t, c); break;
+            case 5: menuPaiement(t, c, 1); break;
         }
     } while (choix != 0);
 }

@@ -419,14 +419,19 @@ void menuMembres(Tontine *t)
         printf("5. Supprimer un membre\n");
         printf("0. Retour\n");
 
-        choix = lireEntier("\nVotre choix : ", 0, 5);
+        printf("\nVotre choix : ");
+        scanf("%d", &choix);
         switch (choix)
         {
             case 1:
-                id = lireEntier("Identifiant du nouveau membre : ", 1, 2147483647);
-                lireChaine("Nom : ", nom, TAILLE_NOM);
-                lireChaine("Telephone : ", telephone, TAILLE_TELEPHONE);
-                lireChaine("Lieu de residence : ", residence, TAILLE_LIEU);
+                printf("Identifiant du nouveau membre : ");
+                scanf("%d", &id);
+                printf("Nom : ");
+                scanf(" %49[^\n]", nom);
+                printf("Telephone : ");
+                scanf(" %19[^\n]", telephone);
+                printf("Lieu de residence : ");
+                scanf(" %49[^\n]", residence);
                 if (ajouterMembre(t, id, nom, telephone, residence))
                 {
                     printf("Membre ajoute avec succes.\n");
@@ -442,16 +447,20 @@ void menuMembres(Tontine *t)
                 break;
 
             case 2:
-                id = lireEntier("Identifiant du membre a modifier : ", 1, 2147483647);
+                printf("Identifiant du membre a modifier : ");
+                scanf("%d", &id);
                 membre = trouverMembreParId(&t->membres, id);
                 if (membre == NULL)
                 {
                     printf("Aucun membre ne correspond a cet identifiant.\n");
                     break;
                 }
-                lireChaine("Nouveau nom : ", nom, TAILLE_NOM);
-                lireChaine("Nouveau telephone : ", telephone, TAILLE_TELEPHONE);
-                lireChaine("Nouveau lieu de residence : ", residence, TAILLE_LIEU);
+                printf("Nouveau nom : ");
+                scanf(" %49[^\n]", nom);
+                printf("Nouveau telephone : ");
+                scanf(" %19[^\n]", telephone);
+                printf("Nouveau lieu de residence : ");
+                scanf(" %49[^\n]", residence);
                 if (modifierMembre(t, id, nom, telephone, residence))
                 {
                     printf("Informations du membre mises a jour.\n");
@@ -466,11 +475,12 @@ void menuMembres(Tontine *t)
                 break;
 
             case 3:
-                typeRecherche = lireEntier(
-                    "Rechercher par : 1. Identifiant  2. Nom\nVotre choix : ", 1, 2);
+                printf("Rechercher par : 1. Identifiant  2. Nom\nVotre choix : ");
+                scanf("%d", &typeRecherche);
                 if (typeRecherche == 1)
                 {
-                    id = lireEntier("Identifiant a rechercher : ", 1, 2147483647);
+                    printf("Identifiant a rechercher : ");
+                    scanf("%d", &id);
                     membre = trouverMembreParId(&t->membres, id);
                     if (membre == NULL)
                     {
@@ -483,8 +493,8 @@ void menuMembres(Tontine *t)
                 }
                 else
                 {
-                    lireChaine("Texte a rechercher dans le nom : ",
-                               recherche, TAILLE_NOM);
+                    printf("Texte a rechercher dans le nom : ");
+                    scanf(" %49[^\n]", recherche);
                     afficherMembresParNom(&t->membres, recherche);
                 }
                 break;
@@ -494,7 +504,8 @@ void menuMembres(Tontine *t)
                 break;
 
             case 5:
-                id = lireEntier("Identifiant du membre a supprimer : ", 1, 2147483647);
+                printf("Identifiant du membre a supprimer : ");
+                scanf("%d", &id);
                 resultat = supprimerMembre(t, id);
                 printf("%s\n", messageSuppression(resultat));
                 if (resultat == SUPPRESSION_OK)

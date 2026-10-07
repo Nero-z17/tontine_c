@@ -288,7 +288,7 @@ ResultatCreationCycle creerCycle(Tontine *t, int idCycle,
     }
 
     if (idCycle <= 0 || montantCotisation <= 0 || frequenceJours <= 0 ||
-        dateDebut == NULL || !dateEstValide(dateDebut))
+        dateDebut == NULL)
     {
         return CREATION_PARAMETRES_INVALIDES;
     }
@@ -477,7 +477,8 @@ Cycle *choisirCycle(const Tontine *t, int exigerEnCours)
     }
 
     afficherTousLesCycles(t);               /* pour que l'utilisateur voie les identifiants */
-    id = lireEntier("\nIdentifiant du cycle : ", 1, INT_MAX);
+    printf("\nIdentifiant du cycle : ");
+    scanf("%d", &id);
 
     c = trouverCycle(t, id);
     if (c == NULL)
@@ -686,18 +687,23 @@ static void saisirEtCreerCycle(Tontine *t)
 
     afficherTitre("CREATION D'UN CYCLE");
 
-    idCycle = lireEntier("Identifiant du cycle : ", 1, INT_MAX);
+    printf("Identifiant du cycle : ");
+    scanf("%d", &idCycle);
     if (trouverCycle(t, idCycle) != NULL)
     {
         printf("%s\n", messageCreationCycle(CREATION_ID_EXISTE));
         return;
     }
-    lireDate("Date de debut (JJ/MM/AAAA) : ", date);
-    frequence = lireEntier("Frequence des seances en jours (7, 14, 30...) : ", 1, 365);
-    montant = lireEntier("Montant de la cotisation (FCFA) : ", 1, INT_MAX);
+    printf("Date de debut (JJ/MM/AAAA) : ");
+    scanf("%10s", date);
+    printf("Frequence des seances en jours (7, 14, 30...) : ");
+    scanf("%d", &frequence);
+    printf("Montant de la cotisation (FCFA) : ");
+    scanf("%d", &montant);
 
     afficherTousLesMembres(&t->membres);
-    nb = lireEntier("\nNombre de participants : ", 2, t->membres.taille);
+    printf("\nNombre de participants : ");
+    scanf("%d", &nb);
 
     ids = malloc(nb * sizeof(int));
     if (ids == NULL)
@@ -711,7 +717,8 @@ static void saisirEtCreerCycle(Tontine *t)
     {
         snprintf(invite, sizeof(invite),
                  "Participant %d/%d - identifiant du membre : ", i + 1, nb);
-        id = lireEntier(invite, 1, INT_MAX);
+        printf("%s", invite);
+        scanf("%d", &id);
 
         if (!idMembreExiste(&t->membres, id))
         {
@@ -733,11 +740,16 @@ static void saisirEtCreerCycle(Tontine *t)
            idCycle, date, frequence, montant, nb);
     printf("L'ordre des beneficiaires sera tire au sort et ne changera plus.\n");
 
-    if (!confirmer("Confirmer la creation du cycle ? (o/n) : "))
     {
-        printf("Creation annulee.\n");
-        free(ids);
-        return;
+        char confirmation[4];
+        printf("Confirmer la creation du cycle ? (o/n) : ");
+        scanf("%3s", confirmation);
+        if (confirmation[0] != 'o' && confirmation[0] != 'O')
+        {
+            printf("Creation annulee.\n");
+            free(ids);
+            return;
+        }
     }
 
     resultat = creerCycle(t, idCycle, date, frequence, montant, ids, nb);
@@ -775,7 +787,8 @@ void menuCycles(Tontine *t)
         printf("6. Consulter le bilan d'un cycle\n");
         printf("0. Retour\n");
 
-        choix = lireEntier("\nVotre choix : ", 0, 6);
+        printf("\nVotre choix : ");
+        scanf("%d", &choix);
         switch (choix)
         {
             case 1:

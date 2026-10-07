@@ -13,7 +13,7 @@
      - seances.h  : trouverSeance(), seanceActuelle()
      - membres.h  : nomDuMembre()
      - fichiers.h : sauvegarderTout(), ajouterHistorique()
-     - utils.h    : saisies, dates, affichage, libellés
+     - utils.h    : dates, affichage, libellés
 
    Ce module est appelé par :
      - seances.c  : creerCotisationsSeance(), creerDettesDepuisSeance(),

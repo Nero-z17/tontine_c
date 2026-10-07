@@ -15,7 +15,7 @@
      - seances.h     : allouerSeances()
      - cotisations.h : nouvelleCotisation(), nouvelleDette(), nouveauPaiement(),
                        ajouterCotisationFin(), ajouterDetteFin(), ajouterPaiementFin()
-     - utils.h       : dateDuJour(), lireEntier(), afficherTitre()
+     - utils.h       : dateDuJour(), afficherTitre()
 
    Ce module est appelé par :
      - TOUS les modules : sauvegarderTout(), ajouterHistorique()

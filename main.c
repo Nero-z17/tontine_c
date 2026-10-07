@@ -57,7 +57,8 @@ int main(void)
         printf("7. Bilans\n");
         printf("0. Quitter\n");
 
-        choix = lireEntier("\nVotre choix : ", 0, 7);
+        printf("\nVotre choix : ");
+        scanf("%d", &choix);
 
         if (aMembres == 0 && choix >= 2 && choix <= 5)
         {

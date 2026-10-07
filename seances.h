@@ -14,7 +14,7 @@
                        menuCotiser()
      - membres.h     : nomDuMembre()
      - fichiers.h    : sauvegarderTout(), ajouterHistorique()
-     - utils.h       : saisies, dates, affichage
+     - utils.h       : dates, affichage
 
    Ce module est appelé par :
      - cycles.c      : initialiserSeances(), ouvrirSeance(), afficherSeance()

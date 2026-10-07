@@ -2,60 +2,15 @@
 #define UTILS_H
 
 /* ============================================================
-   UTILS.H - Fonctions utilitaires communes à tous les modules
-   Responsable : Personne 1 (en plus du module membres)
-   Utilisé par : TOUS les modules (surtout les menus)
-
-   REGLE D'EQUIPE :
-     - Seules les fonctions de ce fichier et les fonctions
-       menu*() lisent le clavier (scanf / fgets).
-     - Les fonctions de logique ne font JAMAIS de scanf.
+   UTILS.H - Dates, affichage commun et fonctions aleatoires
    ============================================================ */
 
 #include "structures.h"
 
 
 /* ============================================================
-   1. SAISIE SECURISEE
+   1. DATES  (format JJ/MM/AAAA, tableaux de TAILLE_DATE)
    ============================================================ */
-
-/* Vide le buffer du clavier (à appeler après un scanf). */
-void viderBuffer(void);
-
-/* Affiche "Appuyez sur Entrée pour continuer..." et attend. */
-void attendreEntree(void);
-
-/*
- * Affiche le message puis lit un entier compris entre min et max
- * (inclus). Recommence tant que la saisie est invalide.
- * Retourne l'entier valide.
- */
-int lireEntier(const char *message, int min, int max);
-
-/*
- * Affiche le message puis lit une ligne (les espaces sont permis).
- * Au plus (taille - 1) caractères sont copiés dans destination.
- * Le '\n' final est supprimé. Les ';' sont remplacés par ',' car
- * le point-virgule sert de séparateur dans les fichiers .txt.
- */
-void lireChaine(const char *message, char *destination, int taille);
-
-/*
- * Lit une date au format JJ/MM/AAAA. Recommence tant que
- * dateEstValide() retourne 0. destination : tableau de TAILLE_DATE.
- */
-void lireDate(const char *message, char *destination);
-
-/* Pose une question oui/non. Retourne 1 pour oui, 0 pour non. */
-int confirmer(const char *message);
-
-
-/* ============================================================
-   2. DATES  (format JJ/MM/AAAA, tableaux de TAILLE_DATE)
-   ============================================================ */
-
-/* Retourne 1 si la date est au bon format ET existe vraiment. */
-int dateEstValide(const char *date);
 
 /* Écrit la date du jour dans destination. */
 void dateDuJour(char *destination);
@@ -69,7 +24,7 @@ void ajouterJoursADate(const char *dateDepart, int nbJours, char *dateResultat);
 
 
 /* ============================================================
-   3. AFFICHAGE COMMUN
+   2. AFFICHAGE COMMUN
    ============================================================ */
 
 /* Affiche un titre encadré, identique dans tout le programme :
@@ -91,7 +46,7 @@ const char *libelleTypePenalite(TypePenalite type);        /* PARTIELLE (10%) / 
 
 
 /* ============================================================
-   4. ALEATOIRE
+   3. ALEATOIRE
    ============================================================ */
 
 /* À appeler UNE SEULE FOIS au début de main() : srand(time(NULL)). */
